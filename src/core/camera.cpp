@@ -40,6 +40,8 @@
 // Camera Method Definitions
 Camera::~Camera() {
     delete film;
+    delete m_primitive_ids;
+    delete m_world_space_pos;
 }
 
 

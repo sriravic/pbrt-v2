@@ -56,6 +56,8 @@ public:
     AnimatedTransform CameraToWorld;
     const float shutterOpen, shutterClose;
     Film *film;
+    Film *m_primitive_ids;
+    Film* m_world_space_pos;
 };
 
 

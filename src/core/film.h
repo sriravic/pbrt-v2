@@ -55,6 +55,11 @@ public:
                                 int *ystart, int *yend) const = 0;
     virtual void UpdateDisplay(int x0, int y0, int x1, int y1, float splatScale = 1.f);
     virtual void WriteImage(float splatScale = 1.f) = 0;
+    
+    // modified functions.
+    virtual void WriteImageRaw() = 0;
+    virtual Filter* getFilter() const = 0;              // retrieve the filter used for the image
+    virtual float*  getCropWindow() = 0;
 
     // Film Public Data
     const int xResolution, yResolution;
