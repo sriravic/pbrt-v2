@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
         printf("Copyright (c)1998-2014 Matt Pharr and Greg Humphreys.\n");
         printf("The source code to pbrt (but *not* the book contents) is covered by the BSD License.\n");
         printf("See the file LICENSE.txt for the conditions of the license.\n");
+        printf("This has been modified by Srinath Ravichandran to more stuff\n");
         fflush(stdout);
     }
     pbrtInit(options);
