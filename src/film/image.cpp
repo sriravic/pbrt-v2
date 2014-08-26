@@ -212,6 +212,31 @@ void ImageFilm::WriteImage(float splatScale) {
     delete[] rgb;
 }
 
+// dump the raw output.
+void ImageFilm::WriteImageRaw()
+{
+    int nPix = xPixelCount * yPixelCount;
+    float *rgb = new float[3*nPix];
+    int offset = 0;
+    for (int y = 0; y < yPixelCount; ++y) {
+        for (int x = 0; x < xPixelCount; ++x) {
+            // Don't do any modification
+            rgb[3*offset  ] = (*pixels)(x, y).Lxyz[0];
+            rgb[3*offset+1] = (*pixels)(x, y).Lxyz[1];
+            rgb[3*offset+2] = (*pixels)(x, y).Lxyz[2];
+            ++offset;
+        }
+    }
+    
+    // Write RGB image
+    printf("Writing RAW file\n");
+    ::WriteImage(filename, rgb, NULL, xPixelCount, yPixelCount,
+                 xResolution, yResolution, xPixelStart, yPixelStart);
+
+    // Release temporary image memory
+    delete[] rgb;
+}
+
 
 void ImageFilm::UpdateDisplay(int x0, int y0, int x1, int y1,
     float splatScale) {
