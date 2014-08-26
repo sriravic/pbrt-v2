@@ -35,7 +35,9 @@
 #include "imageio.h"
 #include "spectrum.h"
 #include "targa.h"
+#include <fstream>
 #include <string.h>
+
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -53,6 +55,8 @@ static void WriteImageTGA(const string &name, float *pixels,
 static RGBSpectrum *ReadImageTGA(const string &name, int *w, int *h);
 static bool WriteImagePFM(const string &filename, const float *rgb, int xres, int yres);
 static RGBSpectrum *ReadImagePFM(const string &filename, int *xres, int *yres);
+static void WriteImageId(const string& filename, const float* rgb, int width, int height, bool save_space = false);
+static void WriteImageWSC(const string& filename, const float* rgb, int width, int height, bool verbose = true, bool save_space = false);
 
 // ImageIO Function Definitions
 RGBSpectrum *ReadImage(const string &name, int *width, int *height) {
@@ -124,6 +128,19 @@ void WriteImage(const string &name, float *pixels, float *alpha, int xRes,
             delete[] rgb8;
             return;
         }
+        if (!strcmp(name.c_str() + suffixOffset, ".id") ||
+            !strcmp(name.c_str() + suffixOffset, ".ID"))
+        {
+            // Custom file format to write id ouptuts in a file and not a pfm.
+            WriteImageId(name, pixels, xRes, yRes);
+        }
+        if (!strcmp(name.c_str() + suffixOffset, ".wsc") ||
+            !strcmp(name.c_str() + suffixOffset, ".wsc"))
+        {
+            // Custom file format to write the world space coords of all the pixels.
+            WriteImageWSC(name, pixels, xRes, yRes);
+        }
+        
     }
     Error("Can't determine image file type from suffix of filename \"%s\"",
           name.c_str());
@@ -459,6 +476,85 @@ static bool WriteImagePFM(const string &filename, const float *rgb,
     Error("Error writing PFM file \"%s\"", filename.c_str());
     fclose(fp);
     return false;
+}
+
+// Custom file writers for custom AOVs.
+
+// Write out the primitive ids of all the intersected pixels.
+// Intersected pixels are provided in rgb floating point format with the only x containing the actual primitive.
+// NOTE: we dont provide exception handling explicitly.!
+static void WriteImageId(const string& filename, const float* rgb, int width, int height, bool save_space)
+{
+    // write only in ascii mode for easier debug
+    std::ofstream output;
+    if(save_space)
+    {
+        output.open(filename.c_str(), std::ios::binary);
+    }
+    else
+    {
+        output.open(filename.c_str());
+    }
+
+    // write the header first
+    output<<"#Id file created by pbrt\n";
+    output<<width<<" "<<height<<"\n";
+    // start dumping data raster line by line
+    size_t index = 0;
+    for(int y = 0; y < height; y++)
+    {
+        for(int x = 0; x < width; x++)
+        {
+            float value = rgb[index * 3 + 0]; // we don't need the y and z values
+            index++;
+            output<<value<<" ";
+        }
+        output<<"\n";
+    }
+    
+    output.close();
+}
+
+static void WriteImageWSC(const string& filename, const float* rgb, int width, int height, bool verbose, bool save_space)
+{
+    // write only in ascii mode for easier debug
+    std::ofstream output;
+    if(save_space)
+    {
+        output.open(filename.c_str(), std::ios::binary);
+    }
+    else
+    {
+        output.open(filename.c_str());
+    }
+
+    // write the header first
+    output<<"#WSC(world space coords) file created by pbrt\n";
+    output<<"If verbose was selected we use a {x,y,z} format to store the values\n";
+    output<<"Else we just dump xyz values without any space\n";        
+    output<<width<<" "<<height<<"\n";
+    // start dumping data raster line by line
+    size_t index = 0;
+    for(int y = 0; y < height; y++)
+    {
+        for(int x = 0; x < width; x++)
+        {
+            float world_x = rgb[index * 3 + 0]; // we don't need the y and z values
+            float world_y = rgb[index * 3 + 1];
+            float world_z = rgb[index * 3 + 2];
+            if(verbose)
+            {
+                output<<"{"<<world_x<<","<<world_y<<","<<world_z<<"} ";     // nice format.!!
+            }
+            else
+            {
+                output<<world_x<<world_y<<world_z<<" ";
+            }
+            index++;            
+        }
+        output<<"\n";
+    }
+    output.close();
 }
 
 
