@@ -614,6 +614,13 @@ Camera *MakeCamera(const string &name,
     else
         Warning("Camera \"%s\" unknown.", name.c_str());
     paramSet.ReportUnused();
+    
+    // create the debug filters
+    std::size_t pos = name.find(".");       // find only the file name and not the extension
+    const std::string prim_file_name = name.substr(0, pos-1) + std::string("_primitive.id");
+    const std::string wsc_file_name = name.substr(0, pos-1) + std::string("_coords.wsc");
+    camera->m_primitive_ids = new ImageFilm(film->xResolution, film->yResolution, film->getFilter(), film->getCropWindow(), prim_file_name, false);
+    camera->m_world_space_pos = new ImageFilm(film->xResolution, film->yResolution, film->getFilter(), film->getCropWindow(), wsc_file_name, false);
     return camera;
 }
 
