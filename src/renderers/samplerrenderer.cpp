@@ -42,6 +42,11 @@
 #include "camera.h"
 #include "intersection.h"
 
+#include "film/image.h"
+Film* g_world_coords;
+Film* g_primitive_ids;
+
+
 static uint32_t hash(char *key, uint32_t len)
 {
     uint32_t hash = 0, i;
@@ -77,6 +82,8 @@ void SamplerRendererTask::Run() {
     Sample *samples = origSample->Duplicate(maxSamples);
     RayDifferential *rays = new RayDifferential[maxSamples];
     Spectrum *Ls = new Spectrum[maxSamples];
+    Spectrum *world_space_coords = new Spectrum[maxSamples];
+    Spectrum *world_space_ids = new Spectrum[maxSamples];
     Spectrum *Ts = new Spectrum[maxSamples];
     Intersection *isects = new Intersection[maxSamples];
 
@@ -108,8 +115,24 @@ void SamplerRendererTask::Run() {
             }
             else {
             if (rayWeight > 0.f)
+            {
                 Ls[i] = rayWeight * renderer->Li(scene, rays[i], &samples[i], rng,
                                                  arena, &isects[i], &Ts[i]);
+                // write to the output
+                Spectrum isect_pt;
+                Spectrum isect_id;
+                if(isects[i].primitiveId != 0)
+                {
+                    float ids[3] = {isects[i].primitiveId, 0, 0};
+                    float& tmax = rays[i].maxt;
+                    Point world_pt = rays[i](tmax);
+                    float pts[3] = {world_pt.x, world_pt.y, world_pt.z};
+                    isect_pt = Spectrum::FromRGB(pts);
+                    isect_id = Spectrum::FromRGB(ids);
+                }
+                world_space_coords[i] = isect_pt;
+                world_space_ids[i] = isect_id;
+            }
             else {
                 Ls[i] = 0.f;
                 Ts[i] = 1.f;
@@ -142,6 +165,8 @@ void SamplerRendererTask::Run() {
             {
                 PBRT_STARTED_ADDING_IMAGE_SAMPLE(&samples[i], &rays[i], &Ls[i], &Ts[i]);
                 camera->film->AddSample(samples[i], Ls[i]);
+                camera->m_primitive_ids->AddSample(samples[i], world_space_ids[i]);
+                camera->m_world_space_pos->AddSample(samples[i], world_space_coords[i]);
                 PBRT_FINISHED_ADDING_IMAGE_SAMPLE();
             }
         }
@@ -159,6 +184,8 @@ void SamplerRendererTask::Run() {
     delete[] Ls;
     delete[] Ts;
     delete[] isects;
+    delete[] world_space_coords;
+    delete[] world_space_ids;
     reporter.Update();
     PBRT_FINISHED_RENDERTASK(taskNum);
 }
@@ -219,6 +246,10 @@ void SamplerRenderer::Render(const Scene *scene) {
     // Clean up after rendering and store final image
     delete sample;
     camera->film->WriteImage();
+    
+    printf("Writing AOV Raw data to PFM Files\n");
+    camera->m_primitive_ids->WriteImageRaw();
+    camera->m_world_space_pos->WriteImageRaw();
 }
 
 
