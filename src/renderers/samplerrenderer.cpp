@@ -130,6 +130,11 @@ void SamplerRendererTask::Run() {
                     isect_pt = Spectrum::FromRGB(pts);
                     isect_id = Spectrum::FromRGB(ids);
                 }
+                else
+                {
+                    world_space_coords[i] = INFINITY;
+                    world_space_ids[i] = 0.0f;
+                }
                 world_space_coords[i] = isect_pt;
                 world_space_ids[i] = isect_id;
             }
