@@ -55,8 +55,8 @@ static void WriteImageTGA(const string &name, float *pixels,
 static RGBSpectrum *ReadImageTGA(const string &name, int *w, int *h);
 static bool WriteImagePFM(const string &filename, const float *rgb, int xres, int yres);
 static RGBSpectrum *ReadImagePFM(const string &filename, int *xres, int *yres);
-static void WriteImageId(const string& filename, const float* rgb, int width, int height, bool save_space = false);
-static void WriteImageWSC(const string& filename, const float* rgb, int width, int height, bool verbose = true, bool save_space = false);
+static void WriteImageId(const string& filename, const float* rgb, int width, int height);
+static void WriteImageWSC(const string& filename, const float* rgb, int width, int height);
 
 // ImageIO Function Definitions
 RGBSpectrum *ReadImage(const string &name, int *width, int *height) {
@@ -483,22 +483,12 @@ static bool WriteImagePFM(const string &filename, const float *rgb,
 // Write out the primitive ids of all the intersected pixels.
 // Intersected pixels are provided in rgb floating point format with the only x containing the actual primitive.
 // NOTE: we dont provide exception handling explicitly.!
-static void WriteImageId(const string& filename, const float* rgb, int width, int height, bool save_space)
+static void WriteImageId(const string& filename, const float* rgb, int width, int height)
 {
     // write only in ascii mode for easier debug
     std::ofstream output;
-    if(save_space)
-    {
-        output.open(filename.c_str(), std::ios::binary);
-    }
-    else
-    {
-        output.open(filename.c_str());
-    }
+    output.open(filename.c_str());
 
-    // write the header first
-    output<<"#Id file created by pbrt\n";
-    output<<width<<" "<<height<<"\n";
     // start dumping data raster line by line
     size_t index = 0;
     for(int y = 0; y < height; y++)
@@ -511,28 +501,20 @@ static void WriteImageId(const string& filename, const float* rgb, int width, in
         }
         output<<"\n";
     }
-    
     output.close();
 }
 
-static void WriteImageWSC(const string& filename, const float* rgb, int width, int height, bool verbose, bool save_space)
+static void WriteImageWSC(const string& filename, const float* rgb, int width, int height)
 {
     // write only in ascii mode for easier debug
-    std::ofstream output;
-    if(save_space)
-    {
-        output.open(filename.c_str(), std::ios::binary);
-    }
-    else
-    {
-        output.open(filename.c_str());
-    }
+    std::ofstream output_x;
+    std::ofstream output_y;
+    std::ofstream output_z;
+    
+    output_x.open((filename + std::string("_x")).c_str());
+    output_y.open((filename + std::string("_y")).c_str());
+    output_z.open((filename + std::string("_z")).c_str());
 
-    // write the header first
-    output<<"#WSC(world space coords) file created by pbrt\n";
-    output<<"If verbose was selected we use a {x,y,z} format to store the values\n";
-    output<<"Else we just dump xyz values without any space\n";        
-    output<<width<<" "<<height<<"\n";
     // start dumping data raster line by line
     size_t index = 0;
     for(int y = 0; y < height; y++)
@@ -542,19 +524,21 @@ static void WriteImageWSC(const string& filename, const float* rgb, int width, i
             float world_x = rgb[index * 3 + 0]; // we don't need the y and z values
             float world_y = rgb[index * 3 + 1];
             float world_z = rgb[index * 3 + 2];
-            if(verbose)
-            {
-                output<<"{"<<world_x<<","<<world_y<<","<<world_z<<"} ";     // nice format.!!
-            }
-            else
-            {
-                output<<world_x<<world_y<<world_z<<" ";
-            }
+            
+            output_x<<world_x<<" ";
+            output_y<<world_y<<" ";
+            output_z<<world_z<<" ";
+            
             index++;            
         }
-        output<<"\n";
+        output_x<<"\n";
+        output_y<<"\n";
+        output_z<<"\n";
     }
-    output.close();
+    
+    output_x.close();
+    output_y.close();
+    output_z.close();
 }
 
 
