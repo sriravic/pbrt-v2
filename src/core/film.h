@@ -57,9 +57,10 @@ public:
     virtual void WriteImage(float splatScale = 1.f) = 0;
     
     // modified functions.
-    virtual void WriteImageRaw() = 0;
-    virtual Filter* getFilter() const = 0;              // retrieve the filter used for the image
-    virtual float*  getCropWindow() = 0;
+    virtual void    WriteImageRaw()     = 0;
+    virtual Filter* GetFilter() const   = 0;              // retrieve the filter used for the image
+    virtual float*  GetCropWindow()     = 0;
+    virtual string  GetFileName() const = 0;
 
     // Film Public Data
     const int xResolution, yResolution;

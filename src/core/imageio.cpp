@@ -128,8 +128,8 @@ void WriteImage(const string &name, float *pixels, float *alpha, int xRes,
             delete[] rgb8;
             return;
         }
-        if (!strcmp(name.c_str() + suffixOffset, ".id") ||
-            !strcmp(name.c_str() + suffixOffset, ".ID"))
+        if (!strcmp(name.c_str() + suffixOffset, ".pid") ||
+            !strcmp(name.c_str() + suffixOffset, ".PID"))
         {
             // Custom file format to write id ouptuts in a file and not a pfm.
             WriteImageId(name, pixels, xRes, yRes);

@@ -62,8 +62,9 @@ public:
     void UpdateDisplay(int x0, int y0, int x1, int y1, float splatScale);
 
     void WriteImageRaw();
-    Filter* getFilter() const { return filter; }
-    float*  getCropWindow() { return &(cropWindow[0]); }
+    Filter* GetFilter() const { return filter; }
+    float*  GetCropWindow() { return &(cropWindow[0]); }
+    string  GetFileName() const { return filename; }
 
 private:
     // ImageFilm Private Data
