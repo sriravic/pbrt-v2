@@ -614,13 +614,7 @@ Camera *MakeCamera(const string &name,
     else
         Warning("Camera \"%s\" unknown.", name.c_str());
     paramSet.ReportUnused();
-    
-    // create the debug filters
-    std::size_t pos = name.find(".");       // find only the file name and not the extension
-    const std::string prim_file_name = name.substr(0, pos-1) + std::string("_primitive.id");
-    const std::string wsc_file_name = name.substr(0, pos-1) + std::string("_coords.wsc");
-    camera->m_primitive_ids = new ImageFilm(film->xResolution, film->yResolution, film->getFilter(), film->getCropWindow(), prim_file_name, false);
-    camera->m_world_space_pos = new ImageFilm(film->xResolution, film->yResolution, film->getFilter(), film->getCropWindow(), wsc_file_name, false);
+       
     return camera;
 }
 
@@ -1279,11 +1273,24 @@ Renderer *RenderOptions::MakeRenderer() const {
 Camera *RenderOptions::MakeCamera() const {
     Filter *filter = MakeFilter(FilterName, FilterParams);
     Film *film = MakeFilm(FilmName, FilmParams, filter);
+          
     if (!film) Severe("Unable to create film.");
     Camera *camera = ::MakeCamera(CameraName, CameraParams,
         CameraToWorld, renderOptions->transformStartTime,
         renderOptions->transformEndTime, film);
     if (!camera) Severe("Unable to create camera.");
+    
+    // create the debug filters
+    const std::string filename = film->GetFileName();
+    std::size_t pos = filename.find(".");       // find only the file name and not the extension
+    const std::string prim_file_name = filename.substr(0, pos) + std::string(".pid");
+    const std::string wsc_file_name = filename.substr(0, pos) + std::string(".wsc");
+    Filter* prim_id_filter = MakeFilter(FilterName, FilterParams);
+    Filter* prim_wsc_filter = MakeFilter(FilterName, FilterParams);
+
+    camera->m_primitive_ids = new ImageFilm(film->xResolution, film->yResolution, prim_id_filter, film->GetCropWindow(), prim_file_name, false);
+    camera->m_world_space_pos = new ImageFilm(film->xResolution, film->yResolution, prim_wsc_filter, film->GetCropWindow(), wsc_file_name, false);
+
     return camera;
 }
 
