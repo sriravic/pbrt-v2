@@ -133,12 +133,14 @@ void WriteImage(const string &name, float *pixels, float *alpha, int xRes,
         {
             // Custom file format to write id ouptuts in a file and not a pfm.
             WriteImageId(name, pixels, xRes, yRes);
+            return;
         }
         if (!strcmp(name.c_str() + suffixOffset, ".wsc") ||
             !strcmp(name.c_str() + suffixOffset, ".wsc"))
         {
             // Custom file format to write the world space coords of all the pixels.
             WriteImageWSC(name, pixels, xRes, yRes);
+            return;
         }
         
     }
