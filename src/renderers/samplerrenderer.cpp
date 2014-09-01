@@ -170,8 +170,8 @@ void SamplerRendererTask::Run() {
             {
                 PBRT_STARTED_ADDING_IMAGE_SAMPLE(&samples[i], &rays[i], &Ls[i], &Ts[i]);
                 camera->film->AddSample(samples[i], Ls[i]);
-                camera->m_primitive_ids->AddSample(samples[i], world_space_ids[i]);
-                camera->m_world_space_pos->AddSample(samples[i], world_space_coords[i]);
+                camera->m_primitive_ids->AddSampleRaw(samples[i], world_space_ids[i]);
+                camera->m_world_space_pos->AddSampleRaw(samples[i], world_space_coords[i]);
                 PBRT_FINISHED_ADDING_IMAGE_SAMPLE();
             }
         }
@@ -182,6 +182,10 @@ void SamplerRendererTask::Run() {
 
     // Clean up after _SamplerRendererTask_ is done with its image region
     camera->film->UpdateDisplay(sampler->xPixelStart,
+        sampler->yPixelStart, sampler->xPixelEnd+1, sampler->yPixelEnd+1);
+    camera->m_primitive_ids->UpdateDisplay(sampler->xPixelStart,
+        sampler->yPixelStart, sampler->xPixelEnd+1, sampler->yPixelEnd+1);
+    camera->m_world_space_pos->UpdateDisplay(sampler->xPixelStart,
         sampler->yPixelStart, sampler->xPixelEnd+1, sampler->yPixelEnd+1);
     delete sampler;
     delete[] samples;

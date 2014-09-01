@@ -61,10 +61,11 @@ public:
     void WriteImage(float splatScale);
     void UpdateDisplay(int x0, int y0, int x1, int y1, float splatScale);
 
-    void WriteImageRaw();
+    void    WriteImageRaw();
     Filter* GetFilter() const { return filter; }
     float*  GetCropWindow() { return &(cropWindow[0]); }
     string  GetFileName() const { return filename; }
+    void    AddSampleRaw(const CameraSample& sample, const Spectrum& L);
 
 private:
     // ImageFilm Private Data

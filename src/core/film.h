@@ -61,6 +61,7 @@ public:
     virtual Filter* GetFilter() const   = 0;              // retrieve the filter used for the image
     virtual float*  GetCropWindow()     = 0;
     virtual string  GetFileName() const = 0;
+    virtual void    AddSampleRaw(const CameraSample& sample, const Spectrum& L) = 0;
 
     // Film Public Data
     const int xResolution, yResolution;
